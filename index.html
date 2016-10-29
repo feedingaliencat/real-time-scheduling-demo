@@ -1,0 +1,74 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+  </head>
+
+  <body>
+    <form action="">
+      <table>
+        <tr>
+          <th>Processi</th>
+          <th>
+            Priorità
+            <span class="tooltip">
+              Minore è il valore, maggiore è la priorità del processo.
+              Ignorato in caso di rate-monotonic.
+            </span>
+          </th>
+          <th>T</th>
+          <th>WCET</th>
+        </tr>
+        <tr>
+          <td>A</td>
+          <td><input type="number" min="0" class="priority" value="0"></td>
+          <td><input type="number" min="0" class="period"></td>
+          <td><input type="number" min="0" class="wcet"></td>
+        </tr>
+        <tr>
+          <td>B</td>
+          <td><input type="number" min="0" class="priority" value="1"></td>
+          <td><input type="number" min="0" class="period"></td>
+          <td><input type="number" min="0" class="wcet"></td>
+        </tr>
+        <tr>
+          <td>C</td>
+          <td><input type="number" min="0" class="priority" value="2"></td>
+          <td><input type="number" min="0" class="period"></td>
+          <td><input type="number" min="0" class="wcet"></td>
+        </tr>
+        <tr>
+          <td>D</td>
+          <td><input type="number" min="0" class="priority" value="3"></td>
+          <td><input type="number" min="0" class="period"></td>
+          <td><input type="number" min="0" class="wcet"></td>
+        </tr>
+        <tr>
+          <td>D</td>
+          <td><input type="number" min="0" class="priority" value="3"></td>
+          <td><input type="number" min="0" class="period"></td>
+          <td><input type="number" min="0" class="wcet"></td>
+        </tr>
+      </table>
+
+      <fieldset class="algorithm-selection">
+        <input id="radio-FPS" type="radio" name="algorithm" value="FPS">
+        <label for="radio-FPS">FPS</label>
+        <input id="radio-ratemonotonic" type="radio" name="algorithm" value="rate-monotonic">
+        <label for="radio-ratemonotonic">FPS: rate monotonic</label>
+        <input id="radio-EDF" type="radio" name="algorithm" value="EDF">
+        <label for="radio-EDF">EDF</label>
+      </fieldset>
+      <fieldset class="options-selection">
+        <input id="opt-preemption" type="checkbox" value="preemption">
+        <label for="opt-preemption">preemption</label>
+<!--
+        <input id="radio-priority-inheritance" type="radio" name="options" value="priority-inheritance">
+        <label for="radio-priority-inheritance">priority inheritance</label>
+        <input id="radio-priority-ceiling" type="radio" name="options" value="priority-ceiling">
+        <label for="radio-priority-ceiling">priority ceiling</label>
+-->
+      </fieldset>
+
+    </form>
+  </body>
+</html>
