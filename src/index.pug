@@ -3,28 +3,30 @@ html
   head
     meta(charset='UTF-8')
     title Real Time scheduling - demo
+    link(href='style.css', rel='stylesheet', type='text/css')
 
   body
     form(action='')
-      table
-        tr
-          th Processi
-          th Priorità
-            span(class='tooltip')
-              | Minore è il valore, maggiore è la priorità del processo.
-              | Ignorato in caso di rate-monotonic.
-          th T
-          th WCET
-
-        each val, index in ['a', 'b', 'c', 'd', 'e']
+      div
+        table(class='table-fill')
           tr
-            td= val
-            td
-              input(type='number', min='0', class='priority', value=index)
-            td
-              input(type='number', min='0', class='period')
-            td
-              input(type='number', min='0', class='wcet')
+            th Processi
+            th(class='with-tooltip') Priorità
+              //- span(class='tooltip')
+              //-   | Minore è il valore, maggiore è la priorità del processo.
+              //-   | Ignorato in caso di rate-monotonic.
+            th T
+            th WCET
+
+          each val, index in ['a', 'b', 'c', 'd', 'e']
+            tr
+              td= val
+              td
+                input(type='number', min='0', class='priority', value=index)
+              td
+                input(type='number', min='0', class='period')
+              td
+                input(type='number', min='0', class='wcet')
 
         fieldset(class='algorithm-selection')
           ul

@@ -1,4 +1,6 @@
-It requires Pug:
+In build, you can find the compiled version of the last release.
+
+To build yourself the current source, instead, you'll need Pug:
 
 ```
 npm install pug pug-cli
@@ -10,5 +12,7 @@ npm install pug pug-cli -g
 
 then
 ```
-pug src --out build
+cd src
+pug .
+chromium index.html
 ```
