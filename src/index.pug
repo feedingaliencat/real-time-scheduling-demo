@@ -4,9 +4,11 @@ html
     meta(charset='UTF-8')
     title Real Time scheduling - demo
     link(href='style.css', rel='stylesheet', type='text/css')
+    script(type='text/javascript', src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js')
+    script(type='text/javascript', src='rtsched.js')
 
   body
-    form(action='')
+    form(action='', onsubmit='manageForm()')
       div
         table(class='table-fill')
           tr
@@ -45,3 +47,12 @@ html
         fieldset(class='options-selection')
           input(id='opt-preemption', type='checkbox', value='preemption')
           label(for='opt-preemption') preemption
+
+      button(type='submit') Via
+
+  script.
+    $(document).ready(function() {
+        $('form').on('submit', function(e){
+            e.preventDefault();
+        });
+    });
