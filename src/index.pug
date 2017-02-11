@@ -22,7 +22,7 @@ html
 
           each val, index in ['a', 'b', 'c', 'd', 'e']
             tr(class='data_field')
-              td= val
+              td(class='thread_name')= val
               td
                 input(type='number', min='0', class='priority', value=index)
               td

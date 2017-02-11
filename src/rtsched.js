@@ -4,6 +4,7 @@ function getData() {
 
     $('#input_data .data_field').each(function() {
         var el = {
+            name:$( this ).find( '.thread_name' ).text(),
             priority:$( this ).find( 'input.priority' ).val(),
             period:$( this ).find( 'input.period' ).val(),
             wcet:$( this ).find( 'input.wcet' ).val(),
