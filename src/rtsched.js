@@ -156,7 +156,7 @@ function drawChart(data) {
                 ctx.fillRect(
                     zeroChart.x + time*rectWidth,
                     maxY.y,
-                    rectWidth, yAxisHeight);
+                    rectWidth, zeroChart.y - maxY.y - 2);
             }
             else {
                 var row = maxY.y + 10 + next['index']*rowHeight;
