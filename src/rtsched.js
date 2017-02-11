@@ -86,7 +86,22 @@ function drawChart(data) {
     var rectHeight = rowHeight - 15;
 
     ctx.fillStyle = '#00CC66';
-    ctx.fillRect(zeroChart.x, maxY.y + 10, rectWidth, rectHeight);
+
+    var time = 0;
+    var animation = setInterval(frame, 500);
+    function frame() {
+        if (time >= totalTime) {
+            clearInterval(animation);
+        }
+        else {
+            ctx.fillRect(
+                zeroChart.x + time*rectWidth,
+                maxY.y + 10,
+                rectWidth, rectHeight);
+            time++;
+        }
+    }
+
     ctx.fillRect(zeroChart.x, maxY.y + 10 + rowHeight, rectWidth, rectHeight);
 }
 
