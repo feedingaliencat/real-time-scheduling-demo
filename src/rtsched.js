@@ -64,7 +64,7 @@ function whosNext(data, time) {
             var deadline = !(time % thread.period);
             if (deadline) {
                 if (thread['status']['remaining'] > 0) {
-                    throw thread.name;
+                    throw thread['status']['index'];
                 }
                 else {
                     thread['status']['remaining'] += thread.wcet;
@@ -76,14 +76,14 @@ function whosNext(data, time) {
             }
         });
     }
-    catch(err) {
-        return 'failure';
+    catch(failingThreadIndex) {
+        return { ok:false, index:failingThreadIndex };
     }
 
     /* FPS */
     winner = null;
     if (whosReady.length == 0) {
-        return 'idle';
+        return { ok:true, idle:true };;
     }
     whosReady.forEach(function(thread) {
         if (winner === null || thread.priority < winner.priority) {
@@ -91,7 +91,7 @@ function whosNext(data, time) {
         }
     })
     winner['status']['remaining']--;
-    return winner['status']['index'];
+    return { ok:true, index:winner['status']['index'] };
 }
 
 
@@ -138,11 +138,9 @@ function drawChart(data) {
             clearInterval(animation);
         }
         else {
-            nextIndex = whosNext(data, time);
-            if (nextIndex == 'failure') {
-                clearInterval(animation);
-            }
-            else if (nextIndex == 'idle') {
+            next = whosNext(data, time);
+            console.log('time: ', time, '; next: ', next['index']);
+            if (next['idle']) {
                 ctx.fillStyle = '#CCE5FF';
                 ctx.fillRect(
                     zeroChart.x + time*rectWidth,
@@ -150,12 +148,16 @@ function drawChart(data) {
                     rectWidth, yAxisHeight);
             }
             else {
-                var row = maxY.y + 10 + nextIndex*rowHeight;
-                ctx.fillStyle = '#00CC66';
+                var row = maxY.y + 10 + next['index']*rowHeight;
+                if (next['ok']) { ctx.fillStyle = '#00CC66'; }
+                else { ctx.fillStyle = '#FF3333'; }
                 ctx.fillRect(
                     zeroChart.x + time*rectWidth,
                     row,
                     rectWidth, rectHeight);
+            }
+            if (!next['ok']) {
+                clearInterval(animation);
             }
             time++;
         }
