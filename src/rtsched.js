@@ -59,14 +59,17 @@ function whosNext(data, time) {
     // check deadlines
     try {
         var whosReady = new Array();
+        var deadlines = new Array();
 
         data.forEach(function(thread) {
             var deadline = !(time % thread.period);
             if (deadline) {
                 if (thread['status']['remaining'] > 0) {
+                    deadlines = [thread['status']['index']];
                     throw thread['status']['index'];
                 }
                 else {
+                    deadlines.push(thread['status']['index']);
                     thread['status']['remaining'] += thread.wcet;
                 }
             }
@@ -77,13 +80,13 @@ function whosNext(data, time) {
         });
     }
     catch(failingThreadIndex) {
-        return { ok:false, index:failingThreadIndex };
+        return { ok:false, index:failingThreadIndex, deadlines:deadlines };
     }
 
     /* FPS */
     winner = null;
     if (whosReady.length == 0) {
-        return { ok:true, idle:true };;
+        return { ok:true, idle:true, deadlines:deadlines };;
     }
     whosReady.forEach(function(thread) {
         if (winner === null || thread.priority < winner.priority) {
@@ -91,7 +94,7 @@ function whosNext(data, time) {
         }
     })
     winner['status']['remaining']--;
-    return { ok:true, index:winner['status']['index'] };
+    return { ok:true, index:winner['status']['index'], deadlines:deadlines };
 }
 
 
@@ -129,13 +132,21 @@ function drawChart(data) {
     var totalTime = leastCommonMultiple(periods);
 
     var rectWidth = xAxisHeight / totalTime;
-    var rectHeight = rowHeight - 15;
+    var rectMargin = 16;
+    var rectHeight = rowHeight - rectMargin;
 
     var time = 0;
     var animation = setInterval(frame, msInterval);
     function frame() {
         if (time >= totalTime) {
             clearInterval(animation);
+
+            time++;
+            var indexes = new Array();
+            data.forEach(function(row) {
+                indexes.push(row['status']['index']);
+            });
+            drawDeadlines(indexes);
         }
         else {
             next = whosNext(data, time);
@@ -159,8 +170,25 @@ function drawChart(data) {
             if (!next['ok']) {
                 clearInterval(animation);
             }
+            drawDeadlines(next['deadlines']);
             time++;
         }
+    }
+
+    function drawDeadlines(indexes) {
+        indexes.forEach(function(index) {
+            ctx.strokeStyle = '#006666';
+            ctx.lineCap="round";
+            ctx.lineWidth = 4;
+            ctx.moveTo(
+                zeroChart.x + time*rectWidth,
+                maxY.y + 12 + index*rowHeight - rectMargin/2);
+            ctx.lineTo(
+                zeroChart.x + time*rectWidth,
+                maxY.y + (index + 1)*rowHeight + rectMargin/2 - 8);
+            ctx.stroke();
+            console.log('disegnato');
+        });
     }
 }
 
