@@ -15,4 +15,19 @@ function getData() {
         }
     });
 
+    return data;
+}
+
+
+function main() {
+    data = getData();
+
+    if (data.length == 0) {
+        $('#result').html('<p class="error">Nessun dato inserito</p>');
+    }
+    else {
+        $('#result').html(
+            '<canvas id="graph" width="1000" height="500" style="border:1px solid #000000;">'
+        );
+    }
 }

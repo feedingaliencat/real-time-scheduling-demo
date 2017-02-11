@@ -8,7 +8,7 @@ html
     script(type='text/javascript', src='rtsched.js')
 
   body
-    form(action='', onsubmit='getData()')
+    form(action='', onsubmit='main()')
       div
         table(id='input_data', class='table-fill')
           tr
@@ -30,25 +30,28 @@ html
               td
                 input(type='number', min='1', class='wcet')
 
-      fieldset(class='algorithm-selection')
-        ul
-        -
-          var algorithms = {
-            'fps': 'FPS',
-            'rate-monotoic': 'FPS: rate monotonic',
-            'edf': 'EDF',
-          }
-        each al_label, algo in algorithms
-          -var al_id = 'radio-' + algo
-          li
-            input(id=al_id, type='radio', name='alghorithm', value=algo)
-            label(for=al_id)= al_label
+      div
+        fieldset(class='algorithm-selection')
+          ul
+          -
+            var algorithms = {
+              'fps': 'FPS',
+              'rate-monotoic': 'FPS: rate monotonic',
+              'edf': 'EDF',
+            }
+          each al_label, algo in algorithms
+            -var al_id = 'radio-' + algo
+            li
+              input(id=al_id, type='radio', name='alghorithm', value=algo)
+              label(for=al_id)= al_label
 
-      fieldset(class='options-selection')
-        input(id='opt-preemption', type='checkbox', value='preemption')
-        label(for='opt-preemption') preemption
+        fieldset(class='options-selection')
+          input(id='opt-preemption', type='checkbox', value='preemption')
+          label(for='opt-preemption') preemption
 
-      button(type='submit') Via
+        button(type='submit') Via
+
+    div(id='result')
 
   script.
     $(document).ready(function() {
