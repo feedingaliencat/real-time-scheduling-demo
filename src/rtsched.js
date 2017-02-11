@@ -1,3 +1,5 @@
+var msInterval = 250;
+
 var canvasWidth = 1000;
 var canvasHeight = 500;
 var maxRows = 5;
@@ -41,11 +43,56 @@ function getData() {
         };
 
         if ((el.priority || el.priority == "0") && el.period && el.wcet) {
+            el['status'] = {
+                remaining:0,
+                index:data.length,
+            };
             data.push(el);
         }
     });
 
     return data;
+}
+
+
+function whosNext(data, time) {
+    // check deadlines
+    try {
+        var whosReady = new Array();
+
+        data.forEach(function(thread) {
+            var deadline = !(time % thread.period);
+            if (deadline) {
+                if (thread['status']['remaining'] > 0) {
+                    debugger;
+                    throw thread.name;
+                }
+                else {
+                    thread['status']['remaining'] += thread.wcet;
+                }
+            }
+
+            if (thread['status']['remaining'] > 0) {
+                whosReady.push(thread);
+            }
+        });
+    }
+    catch(err) {
+        return 'failure';
+    }
+
+    /* FPS */
+    winner = null;
+    if (whosReady.length == 0) {
+        return 'idle';
+    }
+    whosReady.forEach(function(thread) {
+        if (winner === null || thread.priority < winner.priority) {
+            winner = thread;
+        }
+    })
+    winner['status']['remaining']--;
+    return winner['status']['index'];
 }
 
 
@@ -88,21 +135,28 @@ function drawChart(data) {
     ctx.fillStyle = '#00CC66';
 
     var time = 0;
-    var animation = setInterval(frame, 500);
+    var animation = setInterval(frame, msInterval);
     function frame() {
         if (time >= totalTime) {
             clearInterval(animation);
         }
         else {
-            ctx.fillRect(
-                zeroChart.x + time*rectWidth,
-                maxY.y + 10,
-                rectWidth, rectHeight);
+            nextIndex = whosNext(data, time);
+            if (nextIndex == 'failure') {
+                clearInterval(animation);
+            }
+            else if (nextIndex == 'idle') {
+            }
+            else {
+                var row = maxY.y + 10 + nextIndex*rowHeight;
+                ctx.fillRect(
+                    zeroChart.x + time*rectWidth,
+                    row,
+                    rectWidth, rectHeight);
+            }
             time++;
         }
     }
-
-    ctx.fillRect(zeroChart.x, maxY.y + 10 + rowHeight, rectWidth, rectHeight);
 }
 
 
