@@ -1,3 +1,7 @@
+var canvasWidth = 1000;
+var canvasHeight = 500;
+var maxRows = 5;
+
 
 function getData() {
     var data = new Array();
@@ -19,6 +23,34 @@ function getData() {
 }
 
 
+function drawChart(data) {
+    var chart = $('#chart')[0];
+    var ctx = chart.getContext("2d");
+
+    var padding = 20
+    var zeroChart = { x:padding+40, y:canvasHeight-padding };
+    var maxX = { x:canvasWidth-padding, y:zeroChart.y };
+    var maxY = { x:zeroChart.x, y:padding };
+
+    /* cartesian plane */
+    ctx.moveTo(maxY.x, maxY.y);
+    ctx.lineTo(zeroChart.x, zeroChart.y);
+    ctx.lineTo(maxX.x, maxX.y);
+    ctx.stroke();
+
+    /* row names */
+    var rowHeight = (zeroChart.y - maxY.y - 10) / maxRows;
+
+    ctx.font = '30px Arial';
+    ctx.textBaseline = 'top';
+    var position = parseInt(maxY.y) + 10;
+    data.forEach(function(row) {
+        ctx.fillText(row.name, padding, position);
+        position += rowHeight;
+    });
+}
+
+
 function main() {
     data = getData();
 
@@ -27,7 +59,9 @@ function main() {
     }
     else {
         $('#result').html(
-            '<canvas id="graph" width="1000" height="500" style="border:1px solid #000000;">'
+            '<canvas id="chart" width="' + canvasWidth +
+            '" height="' + canvasHeight +
+            '" style="border:1px solid #000000;">'
         );
     }
 }
