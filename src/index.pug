@@ -8,9 +8,9 @@ html
     script(type='text/javascript', src='rtsched.js')
 
   body
-    form(action='', onsubmit='manageForm()')
+    form(action='', onsubmit='getData()')
       div
-        table(class='table-fill')
+        table(id='input_data', class='table-fill')
           tr
             th Processi
             th(class='with-tooltip') Priorità
@@ -21,14 +21,14 @@ html
             th WCET
 
           each val, index in ['a', 'b', 'c', 'd', 'e']
-            tr
+            tr(class='data_field')
               td= val
               td
                 input(type='number', min='0', class='priority', value=index)
               td
-                input(type='number', min='0', class='period')
+                input(type='number', min='1', class='period')
               td
-                input(type='number', min='0', class='wcet')
+                input(type='number', min='1', class='wcet')
 
       fieldset(class='algorithm-selection')
         ul
