@@ -64,7 +64,6 @@ function whosNext(data, time) {
             var deadline = !(time % thread.period);
             if (deadline) {
                 if (thread['status']['remaining'] > 0) {
-                    debugger;
                     throw thread.name;
                 }
                 else {
@@ -132,8 +131,6 @@ function drawChart(data) {
     var rectWidth = xAxisHeight / totalTime;
     var rectHeight = rowHeight - 15;
 
-    ctx.fillStyle = '#00CC66';
-
     var time = 0;
     var animation = setInterval(frame, msInterval);
     function frame() {
@@ -146,9 +143,15 @@ function drawChart(data) {
                 clearInterval(animation);
             }
             else if (nextIndex == 'idle') {
+                ctx.fillStyle = '#CCE5FF';
+                ctx.fillRect(
+                    zeroChart.x + time*rectWidth,
+                    maxY.y,
+                    rectWidth, yAxisHeight);
             }
             else {
                 var row = maxY.y + 10 + nextIndex*rowHeight;
+                ctx.fillStyle = '#00CC66';
                 ctx.fillRect(
                     zeroChart.x + time*rectWidth,
                     row,
