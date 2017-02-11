@@ -3,15 +3,41 @@ var canvasHeight = 500;
 var maxRows = 5;
 
 
+function leastCommonMultiple(numbers) {
+
+    function lcm(x, y) {
+        return Math.abs((x * y) / gcd(x, y));
+    }
+
+    function gcd(x, y) {
+        x = Math.abs(x);
+        y = Math.abs(y);
+
+        while (y) {
+            var t = y;
+            y = x % y;
+            x = t;
+        }
+        return x;
+    }
+
+    result = numbers.pop();
+    while (numbers.length > 0) {
+        result = lcm(result, numbers.pop());
+    }
+    return result;
+}
+
+
 function getData() {
     var data = new Array();
 
     $('#input_data .data_field').each(function() {
         var el = {
             name:$( this ).find( '.thread_name' ).text(),
-            priority:$( this ).find( 'input.priority' ).val(),
-            period:$( this ).find( 'input.period' ).val(),
-            wcet:$( this ).find( 'input.wcet' ).val(),
+            priority:parseInt($( this ).find( 'input.priority' ).val()),
+            period:parseInt($( this ).find( 'input.period' ).val()),
+            wcet:parseInt($( this ).find( 'input.wcet' ).val()),
         };
 
         if ((el.priority || el.priority == "0") && el.period && el.wcet) {
@@ -31,6 +57,8 @@ function drawChart(data) {
     var zeroChart = { x:padding+40, y:canvasHeight-padding };
     var maxX = { x:canvasWidth-padding, y:zeroChart.y };
     var maxY = { x:zeroChart.x, y:padding };
+    var xAxisHeight = maxX.x - zeroChart.x - 10;
+    var yAxisHeight = zeroChart.y - maxY.y - 10;
 
     /* cartesian plane */
     ctx.moveTo(maxY.x, maxY.y);
@@ -39,15 +67,27 @@ function drawChart(data) {
     ctx.stroke();
 
     /* row names */
-    var rowHeight = (zeroChart.y - maxY.y - 10) / maxRows;
+    var rowHeight = yAxisHeight / maxRows;
 
     ctx.font = '30px Arial';
     ctx.textBaseline = 'top';
-    var position = parseInt(maxY.y) + 10;
+    var position = maxY.y + 10;
     data.forEach(function(row) {
-        ctx.fillText(row.name, padding, position);
+        ctx.fillText(row.name, padding, position + 15);
         position += rowHeight;
     });
+
+    /* rectangles */
+    var periods = new Array();
+    data.forEach(function(row) { periods.push(row.period); });
+    var totalTime = leastCommonMultiple(periods);
+
+    var rectWidth = xAxisHeight / totalTime;
+    var rectHeight = rowHeight - 15;
+
+    ctx.fillStyle = '#00CC66';
+    ctx.fillRect(zeroChart.x, maxY.y + 10, rectWidth, rectHeight);
+    ctx.fillRect(zeroChart.x, maxY.y + 10 + rowHeight, rectWidth, rectHeight);
 }
 
 
