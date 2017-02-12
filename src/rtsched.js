@@ -210,6 +210,8 @@ function drawChart(data, options) {
     var time = 0;
     var animation = setInterval(frame, msInterval);
     function frame() {
+        next = whoIsNext(data, options, time);
+
         if (time >= totalTime) {
             var indexes = new Array();
             data.forEach(function(row) {
@@ -221,7 +223,6 @@ function drawChart(data, options) {
             $('#result p').text('OK!');
         }
         else {
-            next = whoIsNext(data, options, time);
             if (next['idle']) {
                 ctx.fillStyle = '#CCE5FF';
                 ctx.fillRect(
@@ -229,23 +230,30 @@ function drawChart(data, options) {
                     maxY.y,
                     rectWidth, zeroChart.y - maxY.y - 2);
             }
-            else {
+            else if (next['ok']) {
                 var row = maxY.y + 10 + next['index']*rowHeight;
-                if (next['ok']) { ctx.fillStyle = '#00CC66'; }
-                else { ctx.fillStyle = '#FF3333'; }
+                ctx.fillStyle = '#00CC66';
                 ctx.fillRect(
                     zeroChart.x + time*rectWidth,
                     row,
                     rectWidth, rectHeight);
             }
-            if (!next['ok']) {
-                clearInterval(animation);
-                $('#result p').text(
-                    'Deadline non rispettata per il thread _' +
-                    next['thread']['name'] + '_.');
-            }
             drawDeadlines(next['deadlines']);
             time++;
+        }
+
+        if (!next['ok']) {
+            var row = maxY.y + 10 + next['index']*rowHeight;
+            ctx.fillStyle = '#FF3333';
+            ctx.fillRect(
+                zeroChart.x + time*rectWidth,
+                row,
+                rectWidth, rectHeight);
+
+            clearInterval(animation);
+            $('#result p').text(
+                'Deadline non rispettata per il thread _' +
+                next['thread']['name'] + '_.');
         }
     }
 
