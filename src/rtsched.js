@@ -2,7 +2,7 @@ var msInterval = 250;
 
 var canvasWidth = 1000;
 var canvasHeight = 500;
-var maxRows = 5;
+var maxRows = 4;
 
 
 function leastCommonMultiple(numbers) {
@@ -161,7 +161,7 @@ function drawChart(data, options) {
     ctx.textBaseline = 'top';
     var position = maxY.y + 10;
     data.forEach(function(row) {
-        ctx.fillText(row.name, padding, position + 15);
+        ctx.fillText(row.name, padding, position + 30);
         position += rowHeight;
     });
 
