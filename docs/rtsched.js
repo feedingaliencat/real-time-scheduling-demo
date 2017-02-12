@@ -1,10 +1,21 @@
 console.log('js imported');
 
-var msInterval = 50;
+var msInterval = null;
 
 var canvasWidth = 1000;
 var canvasHeight = 500;
 var maxRows = 4;
+
+var EXAMPLES = [
+    {
+        algorithm:'fps_rate_monotonic',
+        data:[[0, 10, 6], [1, 15, 3]],
+    },
+    {
+        algorithm:'edf',
+        data:[[0, 40, 20], [1, 60, 22], [2, 80, 8], [3, 120, 4]],
+    },
+];
 
 
 function leastCommonMultiple(numbers) {
@@ -58,10 +69,8 @@ function getData() {
     console.log('data: ', data);
 
     var options = new Object();
-    options['algorithm'] = $('input[name="alghorithm"]:checked').val();
+    options['algorithm'] = $('input[name="algorithm"]:checked').val();
     options['preemption'] = $('#opt-preemption').is(':checked');
-
-    console.log('options: ', options);
 
     return { data:data, options:options };
 }
@@ -284,4 +293,33 @@ function main() {
     }
 
     console.log('done');
+}
+
+
+function loadExample() {
+    index = $('input[name="example"]:checked').val();
+    if (index === undefined) {
+        return;
+    }
+
+    example = EXAMPLES[index];
+    $('input[name="algorithm"][value="' + example.algorithm + '"]').click();
+
+    var threadFields = $('#input_data .data_field');
+    for (var i = 0; i < maxRows; i++) {
+        row = example.data[i];
+        if (!row) {
+            row = ['', '', ''];
+        }
+        threadFields.eq(i).find( 'input.priority' ).val(row[0]);
+        threadFields.eq(i).find( 'input.period' ).val(row[1]);
+        threadFields.eq(i).find( 'input.wcet' ).val(row[2]);
+    }
+}
+
+
+function controls() {
+    speed = $('#opt-speed').val();
+    msInterval = 500 - speed;
+    console.log('msInterval: ', msInterval);
 }
