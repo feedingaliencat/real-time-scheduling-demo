@@ -8,7 +8,20 @@ html
     script(type='text/javascript', src='rtsched.js')
 
   body
-    form(action='', onsubmit='main()')
+    form(id='examples' action='', onchange='loadExample();')
+      fieldset(class='example-selection')
+        ul
+          -
+            var totalExamples = 2;
+            var index = 0;
+
+          while index < totalExamples
+            -var ex_id = 'radio-ex' + index
+            li
+              input(id=ex_id, type='radio', name='example', value=index)
+              label(for=ex_id)= 'esempio ' + index++
+
+    form(action='', onsubmit='main();')
       div
         table(id='input_data', class='table-fill')
           tr
@@ -40,7 +53,7 @@ html
           each al_label, algo in algorithms
             -var al_id = 'radio-' + algo
             li
-              input(id=al_id, type='radio', name='alghorithm', value=algo)
+              input(id=al_id, type='radio', name='algorithm', value=algo)
               label(for=al_id)= al_label
 
         fieldset(class='options-selection')
@@ -62,4 +75,5 @@ html
         $('form').on('submit', function(e){
             e.preventDefault();
         });
+        $('input[name="algorithm"][value="fps"]').click();
     });
