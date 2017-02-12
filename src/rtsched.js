@@ -61,10 +61,10 @@ function getData() {
 }
 
 
-function whosNext(data, options, time) {
+function whoIsNext(data, options, time) {
     // check deadlines
     try {
-        var whosReady = new Array();
+        var whoIsReady = new Array();
         var deadlines = new Array();
 
         data.forEach(function(thread) {
@@ -81,41 +81,59 @@ function whosNext(data, options, time) {
             }
 
             if (thread['status']['remaining'] > 0) {
-                whosReady.push(thread);
+                whoIsReady.push(thread);
             }
         });
     }
     catch(failingThreadIndex) {
         return { ok:false, index:failingThreadIndex, deadlines:deadlines };
     }
+    if (whoIsReady.length == 0) {
+        return { ok:true, idle:true, deadlines:deadlines };;
+    }
 
     function fpsRateMonotonic() {
         winner = null;
-        if (whosReady.length == 0) {
-            return { ok:true, idle:true, deadlines:deadlines };;
-        }
-        whosReady.forEach(function(thread) {
+        whoIsReady.forEach(function(thread) {
             if (winner === null || thread.priority < winner.priority) {
                 winner = thread;
             }
-        })
-        winner['status']['remaining']--;
-        return { ok:true, index:winner['status']['index'], deadlines:deadlines };
+        });
+        return winner
     }
 
     function edf() {
-
+        winner = null;
+        whoIsReady.forEach(function(thread) {
+            thread['status']['deadlineProximity'] = (time+1) % thread.period;
+            if (winner === null) {
+                winner = thread;
+            }
+            else {
+                var ttime = thread['status']['deadlineProximity'];
+                var wtime = winner['status']['deadlineProximity'];
+                if (
+                        winner === null ||
+                        ttime > wtime ||
+                        ( ttime == wtime && thread.priority < winner.priority)) {
+                    winner = thread;
+                }
+            }
+        });
+        return winner
     }
 
     if (options['algorithm'] == 'fps_rate_monotonic') {
-        return fpsRateMonotonic();
+        winner = fpsRateMonotonic();
     }
     else if (options['algorithm'] == 'edf') {
-        return edf();
+        winner = edf();
     }
     else {
         throw 'Unexpected algorithm';
     }
+    winner['status']['remaining']--;
+    return { ok:true, index:winner['status']['index'], deadlines:deadlines };
 }
 
 
@@ -170,7 +188,7 @@ function drawChart(data, options) {
             drawDeadlines(indexes);
         }
         else {
-            next = whosNext(data, options, time);
+            next = whoIsNext(data, options, time);
             console.log('time: ', time, '; next: ', next['index']);
             if (next['idle']) {
                 ctx.fillStyle = '#CCE5FF';
