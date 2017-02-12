@@ -105,17 +105,22 @@ function whoIsNext(data, options, time) {
     function edf() {
         winner = null;
         whoIsReady.forEach(function(thread) {
-            thread['status']['deadlineProximity'] = (time+1) % thread.period;
+            /*
+                nextDeadline = time - time%period + period;
+                distance = nextDeadlin - time;
+            */
+            thread['status']['deadlineDistance'] = thread.period - time%thread.period;
             if (winner === null) {
                 winner = thread;
             }
             else {
-                var ttime = thread['status']['deadlineProximity'];
-                var wtime = winner['status']['deadlineProximity'];
+                var tlife = thread['status']['deadlineDistance'];
+                var wlife = winner['status']['deadlineDistance'];
+                console.log(tlife, wlife);
                 if (
                         winner === null ||
-                        ttime > wtime ||
-                        ( ttime == wtime && thread.priority < winner.priority)) {
+                        tlife < wlife ||
+                        ( tlife == wlife && thread.priority < winner.priority)) {
                     winner = thread;
                 }
             }
