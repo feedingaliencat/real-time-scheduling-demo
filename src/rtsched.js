@@ -68,7 +68,7 @@ function whoIsNext(data, options, time) {
             if (deadline) {
                 if (thread['status']['remaining'] > 0) {
                     deadlines = [thread['status']['index']];
-                    throw thread['status']['index'];
+                    throw thread;
                 }
                 else {
                     deadlines.push(thread['status']['index']);
@@ -81,8 +81,13 @@ function whoIsNext(data, options, time) {
             }
         });
     }
-    catch(failingThreadIndex) {
-        return { ok:false, index:failingThreadIndex, deadlines:deadlines };
+    catch(failingThread) {
+        return {
+            ok:false,
+            index:failingThread['status']['index'],
+            thread:failingThread,
+            deadlines:deadlines
+        };
     }
     if (whoIsReady.length == 0) {
         return { ok:true, idle:true, deadlines:deadlines };;
@@ -178,13 +183,14 @@ function drawChart(data, options) {
     var animation = setInterval(frame, msInterval);
     function frame() {
         if (time >= totalTime) {
-            clearInterval(animation);
-
             var indexes = new Array();
             data.forEach(function(row) {
                 indexes.push(row['status']['index']);
             });
             drawDeadlines(indexes);
+
+            clearInterval(animation);
+            $('#result p').text('OK!');
         }
         else {
             next = whoIsNext(data, options, time);
@@ -206,6 +212,9 @@ function drawChart(data, options) {
             }
             if (!next['ok']) {
                 clearInterval(animation);
+                $('#result p').text(
+                    'Deadline non rispettata per il thread _' +
+                    next['thread']['name'] + '_.');
             }
             drawDeadlines(next['deadlines']);
             time++;
@@ -242,7 +251,8 @@ function main() {
         $('#result').html(
             '<canvas id="chart" width="' + canvasWidth +
             '" height="' + canvasHeight +
-            '" style="border:1px solid #000000;">'
+            '" style="border:1px solid #000000;"></canvas>' +
+            '<p></p>'
         );
         drawChart(formData['data'], formData['options']);
     }
