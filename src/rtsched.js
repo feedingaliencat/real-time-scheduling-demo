@@ -50,12 +50,8 @@ function getData() {
             data.push(el);
         }
     });
-    console.log('data: ', data);
-
     var options = new Object();
     options['algorithm'] = $('input[name="alghorithm"]:checked').val();
-
-    console.log('options: ', options);
 
     return { data:data, options:options };
 }
@@ -116,7 +112,6 @@ function whoIsNext(data, options, time) {
             else {
                 var tlife = thread['status']['deadlineDistance'];
                 var wlife = winner['status']['deadlineDistance'];
-                console.log(tlife, wlife);
                 if (
                         winner === null ||
                         tlife < wlife ||
@@ -193,7 +188,6 @@ function drawChart(data, options) {
         }
         else {
             next = whoIsNext(data, options, time);
-            console.log('time: ', time, '; next: ', next['index']);
             if (next['idle']) {
                 ctx.fillStyle = '#CCE5FF';
                 ctx.fillRect(
