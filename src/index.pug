@@ -44,8 +44,14 @@ html
               label(for=al_id)= al_label
 
         fieldset(class='options-selection')
-          input(id='opt-preemption', type='checkbox', value='preemption')
-          label(for='opt-preemption') preemption
+          ul
+            li
+              input(id='opt-preemption', type='checkbox', value='preemption')
+              label(for='opt-preemption') prelazione
+
+            li
+              input(id='opt-speed', type='range', min='0', max='500')
+              label(for='opt-speed') velocità animazione
 
         button(type='submit') Via
 

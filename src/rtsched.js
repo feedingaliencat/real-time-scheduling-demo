@@ -1,4 +1,4 @@
-var msInterval = 250;
+var msInterval = null;
 
 var canvasWidth = 1000;
 var canvasHeight = 500;
@@ -54,6 +54,8 @@ function getData() {
     var options = new Object();
     options['algorithm'] = $('input[name="alghorithm"]:checked').val();
     options['preemption'] = $('#opt-preemption').is(':checked');
+    speed = $('#opt-speed').val();
+    msInterval = 500 - speed;
 
     return { data:data, options:options };
 }
