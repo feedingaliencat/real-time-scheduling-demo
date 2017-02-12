@@ -49,6 +49,7 @@ function getData() {
         if ((el.priority || el.priority == "0") && el.period && el.wcet) {
             el['status'] = {
                 remaining:0,
+                active:false,
                 index:data.length,
             };
             data.push(el);
@@ -58,6 +59,7 @@ function getData() {
 
     var options = new Object();
     options['algorithm'] = $('input[name="alghorithm"]:checked').val();
+    options['preemption'] = $('#opt-preemption').is(':checked');
 
     console.log('options: ', options);
 
@@ -66,10 +68,11 @@ function getData() {
 
 
 function whoIsNext(data, options, time) {
-    // check deadlines
+    // check deadlines and if a thread if active
     try {
         var whoIsReady = new Array();
         var deadlines = new Array();
+        var activeThread = null;
 
         data.forEach(function(thread) {
             var deadline = !(time % thread.period);
@@ -85,6 +88,9 @@ function whoIsNext(data, options, time) {
                 }
             }
 
+            if (thread['status']['active']) {
+                activeThread = thread;
+            }
             if (thread['status']['remaining'] > 0) {
                 whoIsReady.push(thread);
             }
@@ -98,10 +104,13 @@ function whoIsNext(data, options, time) {
             deadlines:deadlines
         };
     }
+
+    // idle case
     if (whoIsReady.length == 0) {
         return { ok:true, idle:true, deadlines:deadlines };;
     }
 
+    // apply the algorithms
     function fpsRateMonotonic() {
         winner = null;
         whoIsReady.forEach(function(thread) {
@@ -126,7 +135,6 @@ function whoIsNext(data, options, time) {
             else {
                 var tlife = thread['status']['deadlineDistance'];
                 var wlife = winner['status']['deadlineDistance'];
-                console.log(tlife, wlife);
                 if (
                         winner === null ||
                         tlife < wlife ||
@@ -138,7 +146,10 @@ function whoIsNext(data, options, time) {
         return winner
     }
 
-    if (options['algorithm'] == 'fps_rate_monotonic') {
+    if (activeThread && !options['preemption']) {
+        winner = activeThread;
+    }
+    else if (options['algorithm'] == 'fps_rate_monotonic') {
         winner = fpsRateMonotonic();
     }
     else if (options['algorithm'] == 'edf') {
@@ -148,7 +159,10 @@ function whoIsNext(data, options, time) {
         debugger;
         throw 'Unexpected algorithm';
     }
+
     winner['status']['remaining']--;
+    winner['status']['active'] = winner['status']['remaining'] > 0;
+
     return { ok:true, index:winner['status']['index'], deadlines:deadlines };
 }
 
