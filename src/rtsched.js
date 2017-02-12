@@ -185,7 +185,6 @@ function drawChart(data, options) {
         if (time >= totalTime) {
             clearInterval(animation);
 
-            time++;
             var indexes = new Array();
             data.forEach(function(row) {
                 indexes.push(row['status']['index']);
