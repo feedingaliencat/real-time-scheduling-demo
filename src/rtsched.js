@@ -50,12 +50,18 @@ function getData() {
             data.push(el);
         }
     });
+    console.log('data: ', data);
 
-    return data;
+    var options = new Object();
+    options['algorithm'] = $('input[name="alghorithm"]:checked').val();
+
+    console.log('options: ', options);
+
+    return { data:data, options:options };
 }
 
 
-function whosNext(data, time) {
+function whosNext(data, options, time) {
     // check deadlines
     try {
         var whosReady = new Array();
@@ -83,22 +89,37 @@ function whosNext(data, time) {
         return { ok:false, index:failingThreadIndex, deadlines:deadlines };
     }
 
-    /* FPS */
-    winner = null;
-    if (whosReady.length == 0) {
-        return { ok:true, idle:true, deadlines:deadlines };;
-    }
-    whosReady.forEach(function(thread) {
-        if (winner === null || thread.priority < winner.priority) {
-            winner = thread;
+    function fpsRateMonotonic() {
+        winner = null;
+        if (whosReady.length == 0) {
+            return { ok:true, idle:true, deadlines:deadlines };;
         }
-    })
-    winner['status']['remaining']--;
-    return { ok:true, index:winner['status']['index'], deadlines:deadlines };
+        whosReady.forEach(function(thread) {
+            if (winner === null || thread.priority < winner.priority) {
+                winner = thread;
+            }
+        })
+        winner['status']['remaining']--;
+        return { ok:true, index:winner['status']['index'], deadlines:deadlines };
+    }
+
+    function edf() {
+
+    }
+
+    if (options['algorithm'] == 'fps_rate_monotonic') {
+        return fpsRateMonotonic();
+    }
+    else if (options['algorithm'] == 'edf') {
+        return edf();
+    }
+    else {
+        throw 'Unexpected algorithm';
+    }
 }
 
 
-function drawChart(data) {
+function drawChart(data, options) {
     var chart = $('#chart')[0];
     var ctx = chart.getContext("2d");
 
@@ -149,7 +170,7 @@ function drawChart(data) {
             drawDeadlines(indexes);
         }
         else {
-            next = whosNext(data, time);
+            next = whosNext(data, options, time);
             console.log('time: ', time, '; next: ', next['index']);
             if (next['idle']) {
                 ctx.fillStyle = '#CCE5FF';
@@ -187,17 +208,19 @@ function drawChart(data) {
                 zeroChart.x + time*rectWidth,
                 maxY.y + (index + 1)*rowHeight + rectMargin/2 - 8);
             ctx.stroke();
-            console.log('disegnato');
         });
     }
 }
 
 
 function main() {
-    data = getData();
+    formData = getData();
 
-    if (data.length == 0) {
+    if (formData['data'].length == 0) {
         $('#result').html('<p class="error">Nessun dato inserito</p>');
+    }
+    else if (!formData['options']['algorithm']) {
+        $('#result').html('<p class="error">Selezionare un algoritmo</p>');
     }
     else {
         $('#result').html(
@@ -205,5 +228,6 @@ function main() {
             '" height="' + canvasHeight +
             '" style="border:1px solid #000000;">'
         );
+        drawChart(formData['data'], formData['options']);
     }
 }

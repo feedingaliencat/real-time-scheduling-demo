@@ -16,7 +16,6 @@ html
             th(class='with-tooltip') Priorità
               //- span(class='tooltip')
               //-   | Minore è il valore, maggiore è la priorità del processo.
-              //-   | Ignorato in caso di rate-monotonic.
             th T
             th WCET
 
@@ -35,8 +34,7 @@ html
           ul
           -
             var algorithms = {
-              'fps': 'FPS',
-              'rate-monotoic': 'FPS: rate monotonic',
+              'fps_rate_monotonic': 'FPS: rate monotonic',
               'edf': 'EDF',
             }
           each al_label, algo in algorithms
