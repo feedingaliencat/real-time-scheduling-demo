@@ -1,4 +1,5 @@
-In build, you can find the compiled version of the last release.
+In docs, you can find the compiled version of the last release.
+It is available at https://feedingaliencat.github.io/real-time-scheduling-demo
 
 To build yourself the current source, instead, you'll need Pug:
 

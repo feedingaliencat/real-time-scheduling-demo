@@ -1,10 +1,10 @@
 console.log('js imported');
 
-var msInterval = 250;
+var msInterval = 50;
 
 var canvasWidth = 1000;
 var canvasHeight = 500;
-var maxRows = 5;
+var maxRows = 4;
 
 
 function leastCommonMultiple(numbers) {
@@ -54,55 +54,106 @@ function getData() {
             data.push(el);
         }
     });
-
     console.log('data: ', data);
-    return data;
+
+    var options = new Object();
+    options['algorithm'] = $('input[name="alghorithm"]:checked').val();
+
+    console.log('options: ', options);
+
+    return { data:data, options:options };
 }
 
 
-function whosNext(data, time) {
+function whoIsNext(data, options, time) {
     // check deadlines
     try {
-        var whosReady = new Array();
+        var whoIsReady = new Array();
+        var deadlines = new Array();
 
         data.forEach(function(thread) {
             var deadline = !(time % thread.period);
             if (deadline) {
-                /* TODO: draw deadlines */
+                console.log('deadline for ', thread.name);
                 if (thread['status']['remaining'] > 0) {
-                    debugger;
-                    throw thread.name;
+                    deadlines = [thread['status']['index']];
+                    throw thread;
                 }
                 else {
+                    deadlines.push(thread['status']['index']);
                     thread['status']['remaining'] += thread.wcet;
                 }
             }
 
             if (thread['status']['remaining'] > 0) {
-                whosReady.push(thread);
+                whoIsReady.push(thread);
             }
         });
     }
-    catch(err) {
-        return 'failure';
+    catch(failingThread) {
+        return {
+            ok:false,
+            index:failingThread['status']['index'],
+            thread:failingThread,
+            deadlines:deadlines
+        };
+    }
+    if (whoIsReady.length == 0) {
+        return { ok:true, idle:true, deadlines:deadlines };;
     }
 
-    /* FPS */
-    winner = null;
-    if (whosReady.length == 0) {
-        return 'idle';
+    function fpsRateMonotonic() {
+        winner = null;
+        whoIsReady.forEach(function(thread) {
+            if (winner === null || thread.priority < winner.priority) {
+                winner = thread;
+            }
+        });
+        return winner
     }
-    whosReady.forEach(function(thread) {
-        if (winner === null || thread.priority < winner.priority) {
-            winner = thread;
-        }
-    })
+
+    function edf() {
+        winner = null;
+        whoIsReady.forEach(function(thread) {
+            /*
+                nextDeadline = time - time%period + period;
+                distance = nextDeadlin - time;
+            */
+            thread['status']['deadlineDistance'] = thread.period - time%thread.period;
+            if (winner === null) {
+                winner = thread;
+            }
+            else {
+                var tlife = thread['status']['deadlineDistance'];
+                var wlife = winner['status']['deadlineDistance'];
+                console.log(tlife, wlife);
+                if (
+                        winner === null ||
+                        tlife < wlife ||
+                        ( tlife == wlife && thread.priority < winner.priority)) {
+                    winner = thread;
+                }
+            }
+        });
+        return winner
+    }
+
+    if (options['algorithm'] == 'fps_rate_monotonic') {
+        winner = fpsRateMonotonic();
+    }
+    else if (options['algorithm'] == 'edf') {
+        winner = edf();
+    }
+    else {
+        debugger;
+        throw 'Unexpected algorithm';
+    }
     winner['status']['remaining']--;
-    return winner['status']['index'];
+    return { ok:true, index:winner['status']['index'], deadlines:deadlines };
 }
 
 
-function drawChart(data) {
+function drawChart(data, options) {
     var chart = $('#chart')[0];
     var ctx = chart.getContext("2d");
 
@@ -126,7 +177,7 @@ function drawChart(data) {
     ctx.textBaseline = 'top';
     var position = maxY.y + 10;
     data.forEach(function(row) {
-        ctx.fillText(row.name, padding, position + 15);
+        ctx.fillText(row.name, padding, position + 30);
         position += rowHeight;
     });
 
@@ -136,57 +187,87 @@ function drawChart(data) {
     var totalTime = leastCommonMultiple(periods);
 
     var rectWidth = xAxisHeight / totalTime;
-    var rectHeight = rowHeight - 15;
-
-    ctx.fillStyle = '#00CC66';
+    var rectMargin = 16;
+    var rectHeight = rowHeight - rectMargin;
 
     var time = 0;
     var animation = setInterval(frame, msInterval);
     function frame() {
         if (time >= totalTime) {
+            var indexes = new Array();
+            data.forEach(function(row) {
+                indexes.push(row['status']['index']);
+            });
+            drawDeadlines(indexes);
+
             clearInterval(animation);
-            /* TODO: print ok */
-            console.log('ok!!');
+            $('#result p').text('OK!');
         }
         else {
-            nextIndex = whosNext(data, time);
-            console.log('time: ', time);
-            console.log('next: ', nextIndex);
-            if (nextIndex == 'failure') {
-                clearInterval(animation);
-                /* TODO: print fail */
-                console.log('failure :(');
-            }
-            else if (nextIndex == 'idle') {
-                /* TODO */
+            next = whoIsNext(data, options, time);
+            console.log('time: ', time, '; next: ', next['index']);
+            if (next['idle']) {
+                ctx.fillStyle = '#CCE5FF';
+                ctx.fillRect(
+                    zeroChart.x + time*rectWidth,
+                    maxY.y,
+                    rectWidth, zeroChart.y - maxY.y - 2);
             }
             else {
-                var row = maxY.y + 10 + nextIndex*rowHeight;
+                var row = maxY.y + 10 + next['index']*rowHeight;
+                if (next['ok']) { ctx.fillStyle = '#00CC66'; }
+                else { ctx.fillStyle = '#FF3333'; }
                 ctx.fillRect(
                     zeroChart.x + time*rectWidth,
                     row,
                     rectWidth, rectHeight);
             }
+            if (!next['ok']) {
+                clearInterval(animation);
+                $('#result p').text(
+                    'Deadline non rispettata per il thread _' +
+                    next['thread']['name'] + '_.');
+            }
+            drawDeadlines(next['deadlines']);
             time++;
         }
+    }
+
+    function drawDeadlines(indexes) {
+        indexes.forEach(function(index) {
+            ctx.strokeStyle = '#006666';
+            ctx.lineCap="round";
+            ctx.lineWidth = 4;
+            ctx.moveTo(
+                zeroChart.x + time*rectWidth,
+                maxY.y + 12 + index*rowHeight - rectMargin/2);
+            ctx.lineTo(
+                zeroChart.x + time*rectWidth,
+                maxY.y + (index + 1)*rowHeight + rectMargin/2 - 8);
+            ctx.stroke();
+        });
     }
 }
 
 
 function main() {
-    data = getData();
+    formData = getData();
 
-    if (data.length == 0) {
+    if (formData['data'].length == 0) {
         $('#result').html('<p class="error">Nessun dato inserito</p>');
     }
-    /*else {*/
+    else if (!formData['options']['algorithm']) {
+        $('#result').html('<p class="error">Selezionare un algoritmo</p>');
+    }
+    else {
         $('#result').html(
             '<canvas id="chart" width="' + canvasWidth +
             '" height="' + canvasHeight +
-            '" style="border:1px solid #000000;">'
+            '" style="border:1px solid #000000;"></canvas>' +
+            '<p></p>'
         );
-        drawChart(data);
-    /*}*/
+        drawChart(formData['data'], formData['options']);
+    }
 
     console.log('done');
 }
