@@ -256,6 +256,7 @@ function drawChart(data, options) {
     function frame() {
         next = whoIsNext(data, options, time);
         if (!next['ok']) {
+            // red rectangle
             var row = maxY.y + 10 + next['index']*rowHeight;
             ctx.fillStyle = '#FF3333';
             ctx.fillRect(
@@ -273,6 +274,7 @@ function drawChart(data, options) {
             $('#result p').text('OK!');
         }
         else if (next['idle']) {
+            // big grey rectangle
             ctx.fillStyle = '#CCE5FF';
             ctx.fillRect(
                 zeroChart.x + time*rectWidth,
@@ -280,6 +282,7 @@ function drawChart(data, options) {
                 rectWidth, zeroChart.y - maxY.y - 2);
         }
         else {
+            // green rectangle
             var row = maxY.y + 10 + next['index']*rowHeight;
             ctx.fillStyle = '#00CC66';
             ctx.fillRect(
@@ -291,6 +294,7 @@ function drawChart(data, options) {
         if (!next['event']) {
             drawCurrentTime();
         }
+
         if (time >= totalTime) {
             var indexes = new Array();
             data.forEach(function(row) {
@@ -300,7 +304,7 @@ function drawChart(data, options) {
         }
         else {
             drawDeadlines(next['deadlines']);
-                time++;
+            time++;
         }
     }
 
