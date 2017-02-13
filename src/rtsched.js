@@ -58,6 +58,11 @@ function getData() {
         };
 
         if ((el.priority || el.priority == "0") && el.period && el.wcet) {
+            if(el.wcet > el.period) {
+                throw 'WCET non può essere maggiore di T';
+            }
+
+            // The analyzed row is valid. Add some more info and push
             el['status'] = {
                 remaining:0,
                 active:false,
@@ -294,7 +299,13 @@ function drawChart(data, options) {
 
 
 function main() {
-    formData = getData();
+    try {
+        formData = getData();
+    }
+    catch(message) {
+        $('#result').html('<p class="error">' + message + '</p>');
+        return;
+    }
 
     if (formData['data'].length == 0) {
         $('#result').html('<p class="error">Nessun dato inserito</p>');
