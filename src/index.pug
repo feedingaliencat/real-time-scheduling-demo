@@ -3,73 +3,97 @@ html
   head
     meta(charset='UTF-8')
     title Real Time scheduling - demo
-    link(href='style.css', rel='stylesheet', type='text/css')
     script(type='text/javascript', src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js')
     script(type='text/javascript', src='rtsched.js')
 
+    link(href='http://fonts.googleapis.com/icon?family=Material+Icons', rel='stylesheet')
+    link(type='text/css', rel='stylesheet', href='https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.0/css/materialize.min.css')
+    meta(name='viewport', content='width=device-width, initial-scale=1.0')
+    script(type='text/javascript', src='https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.0/js/materialize.min.js')
+
   body
-    form(id='examples' action='', onchange='loadExample();')
-      fieldset(class='example-selection')
-        ul
-          -
-            var totalExamples = 3;
-            var index = 0;
+    div(class='container')
 
-          while index < totalExamples
-            -var ex_id = 'radio-ex' + index
-            li
-              input(id=ex_id, type='radio', name='example', value=index)
-              label(for=ex_id)= 'esempio ' + index++
+      div(class='row')
+        div(class='col s6')
+          form(id='examples' action='', onchange='loadExample();')
+            fieldset(class='example-selection')
+              ul
+                -
+                  var totalExamples = 3;
+                  var index = 0;
 
-    form(action='', onsubmit='main();')
-      div
-        table(id='input_data', class='table-fill')
-          tr
-            th Processi
-            th(class='with-tooltip') Priorità
-              //- span(class='tooltip')
-              //-   | Minore è il valore, maggiore è la priorità del processo.
-            th T
-            th WCET
+                while index < totalExamples
+                  -var ex_id = 'radio-ex' + index
+                  li
+                    input(id=ex_id, type='radio', name='example', value=index)
+                    label(for=ex_id)= 'esempio ' + index++
 
-          each val, index in ['a', 'b', 'c', 'd']
-            tr(class='data_field')
-              td(class='thread_name')= val
-              td
-                input(type='number', min='0', class='priority', value=index)
-              td
-                input(type='number', min='1', class='period')
-              td
-                input(type='number', min='1', class='wcet')
+      div(class='row')
+        div(class='col s12')
+          form(action='', onsubmit='main();')
+            div
+              table(id='input_data', class='table-fill')
+                thead
+                  tr
+                    th Processi
+                    th(class='with-tooltip') Priorità
+                      //- span(class='tooltip')
+                      //-   | Minore è il valore, maggiore è la priorità del processo.
+                    th T
+                    th WCET
 
-      div
-        fieldset(class='algorithm-selection')
-          ul
-          -
-            var algorithms = {
-              'fps': 'Fixed Priority Scheduling: priorità definita in tabella',
-              'fps_rate_monotonic': 'Fixed Priority Scheduling: rate monotonic',
-              'edf': 'Earliest Deadline First',
-            }
-          each al_label, algo in algorithms
-            -var al_id = 'radio-' + algo
-            li
-              input(id=al_id, type='radio', name='algorithm', value=algo)
-              label(for=al_id)= al_label
+                tbody
+                  each val, index in ['a', 'b', 'c', 'd']
+                    tr(class='data_field')
+                      td(class='thread_name')= val
+                      td
+                        input(type='number', min='0', class='priority', value=index)
+                      td
+                        input(type='number', min='1', class='period')
+                      td
+                        input(type='number', min='1', class='wcet')
 
-        fieldset(class='options-selection')
-          ul
-            li
-              input(id='opt-preemption', type='checkbox', value='preemption')
-              label(for='opt-preemption') prelazione
+            div(class='row')
+              div(class='col s6')
+                fieldset(class='algorithm-selection')
+                  -
+                    var algorithms = {
+                      'fps': 'Fixed Priority Scheduling: priorità definita in tabella',
+                      'fps_rate_monotonic': 'Fixed Priority Scheduling: rate monotonic',
+                      'edf': 'Earliest Deadline First',
+                    }
+                  each al_label, algo in algorithms
+                    -var al_id = 'radio-' + algo
+                    p
+                      input(id=al_id, type='radio', name='algorithm', value=algo)
+                      label(for=al_id)= al_label
 
-            li
-              input(id='opt-speed', type='range', min='0', max='500')
-              label(for='opt-speed') velocità animazione
+              div(class='col s6')
+                div(class='row')
+                  fieldset(class='options-selection')
+                    ul
+                      li
+                        input(id='opt-preemption', type='checkbox', value='preemption')
+                        label(for='opt-preemption') prelazione
 
-        button(type='submit') Via
+                          div(class='col s6')
 
-    div(id='result')
+            div(class='row')
+              button(type='submit', onclick='main();', class='btn waves-effect waves-light') Via
+
+      div(class='row')
+        div(class='col s6')
+          form(id='controls' action='', onchange='controls();')
+            input(id='opt-speed', type='range', min='0', max='500')
+            label(for='opt-speed') velocità animazione
+
+      div(id='resultContainer', class='row')
+        div(id='result')
+        div(class='col s6 offset-s6')
+          div(class='card blue-grey darken-1')
+            div(class='card-content white-text')
+              p(id='resultMessage')
 
   script.
     $(document).ready(function() {
@@ -77,4 +101,5 @@ html
             e.preventDefault();
         });
         $('input[name="algorithm"][value="fps"]').click();
+        $('#resultContainer').hide();
     });

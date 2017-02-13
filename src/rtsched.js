@@ -74,8 +74,6 @@ function getData() {
     var options = new Object();
     options['algorithm'] = $('input[name="algorithm"]:checked').val();
     options['preemption'] = $('#opt-preemption').is(':checked');
-    speed = $('#opt-speed').val();
-    msInterval = 500 - speed;
 
     return { data:data, options:options };
 }
@@ -265,13 +263,13 @@ function drawChart(data, options) {
                 rectWidth, rectHeight);
 
             clearInterval(animation);
-            $('#result p').text(
+            $('#resultMessage').text(
                 'Deadline non rispettata per il thread _' +
                 next['thread']['name'] + '_.');
         }
         else if (time >= totalTime) {
             clearInterval(animation);
-            $('#result p').text('OK!');
+            $('#resultMessage').text('OK!');
         }
         else if (next['idle']) {
             // big grey rectangle
@@ -341,25 +339,25 @@ function main() {
         formData = getData();
     }
     catch(message) {
-        $('#result').html('<p class="error">' + message + '</p>');
+        $('#resultMessage').html(message);
         return;
     }
 
     if (formData['data'].length == 0) {
-        $('#result').html('<p class="error">Nessun dato inserito</p>');
+        $('#resultMessage').html('Nessun dato inserito');
     }
     else if (!formData['options']['algorithm']) {
-        $('#result').html('<p class="error">Selezionare un algoritmo</p>');
+        $('#resultMessage').html('Selezionare un algoritmo');
     }
     else {
         $('#result').html(
             '<canvas id="chart" width="' + canvasWidth +
             '" height="' + canvasHeight +
-            '" style="border:1px solid #000000;"></canvas>' +
-            '<p></p>'
+            '" style="border:1px solid #000000;"></canvas>'
         );
         drawChart(formData['data'], formData['options']);
     }
+    $('#resultContainer').show();
 }
 
 
@@ -382,4 +380,11 @@ function loadExample() {
         threadFields.eq(i).find( 'input.period' ).val(row[1]);
         threadFields.eq(i).find( 'input.wcet' ).val(row[2]);
     }
+}
+
+
+function controls() {
+    speed = $('#opt-speed').val();
+    msInterval = 500 - speed;
+    console.log('msInterval: ', msInterval);
 }
