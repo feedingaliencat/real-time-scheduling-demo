@@ -10,6 +10,10 @@ var EXAMPLES = [
         data:[[0, 10, 6], [1, 15, 3]],
     },
     {
+        algorithm:'fps_rate_monotonic',
+        data:[[0, 10, 6], [1, 15, 8]],
+    },
+    {
         algorithm:'edf',
         data:[[0, 40, 20], [1, 60, 22], [2, 80, 8], [3, 120, 4]],
     },
