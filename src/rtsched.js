@@ -235,37 +235,6 @@ function drawChart(data, options) {
     var animation = setInterval(frame, msInterval);
     function frame() {
         next = whoIsNext(data, options, time);
-
-        if (time >= totalTime) {
-            var indexes = new Array();
-            data.forEach(function(row) {
-                indexes.push(row['status']['index']);
-            });
-            drawDeadlines(indexes);
-
-            clearInterval(animation);
-            $('#result p').text('OK!');
-        }
-        else {
-            if (next['idle']) {
-                ctx.fillStyle = '#CCE5FF';
-                ctx.fillRect(
-                    zeroChart.x + time*rectWidth,
-                    maxY.y,
-                    rectWidth, zeroChart.y - maxY.y - 2);
-            }
-            else if (next['ok']) {
-                var row = maxY.y + 10 + next['index']*rowHeight;
-                ctx.fillStyle = '#00CC66';
-                ctx.fillRect(
-                    zeroChart.x + time*rectWidth,
-                    row,
-                    rectWidth, rectHeight);
-            }
-            drawDeadlines(next['deadlines']);
-            time++;
-        }
-
         if (!next['ok']) {
             var row = maxY.y + 10 + next['index']*rowHeight;
             ctx.fillStyle = '#FF3333';
@@ -278,6 +247,37 @@ function drawChart(data, options) {
             $('#result p').text(
                 'Deadline non rispettata per il thread _' +
                 next['thread']['name'] + '_.');
+        }
+        else if (time >= totalTime) {
+            clearInterval(animation);
+            $('#result p').text('OK!');
+        }
+        else if (next['idle']) {
+            ctx.fillStyle = '#CCE5FF';
+            ctx.fillRect(
+                zeroChart.x + time*rectWidth,
+                maxY.y,
+                rectWidth, zeroChart.y - maxY.y - 2);
+        }
+        else {
+            var row = maxY.y + 10 + next['index']*rowHeight;
+            ctx.fillStyle = '#00CC66';
+            ctx.fillRect(
+                zeroChart.x + time*rectWidth,
+                row,
+                rectWidth, rectHeight);
+        }
+
+        if (time >= totalTime) {
+            var indexes = new Array();
+            data.forEach(function(row) {
+                indexes.push(row['status']['index']);
+            });
+            drawDeadlines(indexes);
+        }
+        else {
+            drawDeadlines(next['deadlines']);
+                time++;
         }
     }
 
