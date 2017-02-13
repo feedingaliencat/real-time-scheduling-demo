@@ -83,9 +83,9 @@ function getData() {
 
 function whoIsNext(data, options, time) {
     // check deadlines and if a thread if active
+    var deadlines = new Array();
     try {
         var whoIsReady = new Array();
-        var deadlines = new Array();
         var activeThread = null;
 
         data.forEach(function(thread) {
@@ -114,7 +114,8 @@ function whoIsNext(data, options, time) {
             ok:false,
             index:failingThread['status']['index'],
             thread:failingThread,
-            deadlines:deadlines
+            // `deadlines` is inizialized in any case
+            deadlines:deadlines,
         };
     }
 
