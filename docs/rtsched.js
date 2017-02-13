@@ -87,9 +87,11 @@ function getData() {
 
 function whoIsNext(data, options, time) {
     // check deadlines and if a thread if active
+    var deadlines = new Array();
+    var event = false;
+
     try {
         var whoIsReady = new Array();
-        var deadlines = new Array();
         var activeThread = null;
 
         data.forEach(function(thread) {
@@ -98,6 +100,7 @@ function whoIsNext(data, options, time) {
                 console.log('deadline for ', thread.name);
                 if (thread['status']['remaining'] > 0) {
                     deadlines = [thread['status']['index']];
+                    event = true;
                     throw thread;
                 }
                 else {
@@ -119,13 +122,15 @@ function whoIsNext(data, options, time) {
             ok:false,
             index:failingThread['status']['index'],
             thread:failingThread,
-            deadlines:deadlines
+            // `deadlines` is inizialized in any case
+            deadlines:deadlines,
+            event:event,
         };
     }
 
     // idle case
     if (whoIsReady.length == 0) {
-        return { ok:true, idle:true, deadlines:deadlines };;
+        return { ok:true, idle:true, deadlines:deadlines, event:event };
     }
 
     // apply the algorithms
@@ -194,9 +199,21 @@ function whoIsNext(data, options, time) {
     }
 
     winner['status']['remaining']--;
+    if (winner['status']['active']) {
+        // a new thread is executing, now
+        event = true;
+    }
     winner['status']['active'] = winner['status']['remaining'] > 0;
+    if (!winner['status']['active']) {
+        event = true;
+    }
 
-    return { ok:true, index:winner['status']['index'], deadlines:deadlines };
+    return {
+        ok:true,
+        index:winner['status']['index'],
+        deadlines:deadlines,
+        event:event
+    };
 }
 
 
@@ -212,6 +229,9 @@ function drawChart(data, options) {
     var yAxisHeight = zeroChart.y - maxY.y - 10;
 
     /* cartesian plane */
+    ctx.strokeStyle = '#006666';
+    ctx.lineCap="round";
+    ctx.lineWidth = 4;
     ctx.moveTo(maxY.x, maxY.y);
     ctx.lineTo(zeroChart.x, zeroChart.y);
     ctx.lineTo(maxX.x, maxX.y);
@@ -242,6 +262,7 @@ function drawChart(data, options) {
     function frame() {
         next = whoIsNext(data, options, time);
         if (!next['ok']) {
+            // red rectangle
             var row = maxY.y + 10 + next['index']*rowHeight;
             ctx.fillStyle = '#FF3333';
             ctx.fillRect(
@@ -259,6 +280,7 @@ function drawChart(data, options) {
             $('#result p').text('OK!');
         }
         else if (next['idle']) {
+            // big grey rectangle
             ctx.fillStyle = '#CCE5FF';
             ctx.fillRect(
                 zeroChart.x + time*rectWidth,
@@ -266,12 +288,18 @@ function drawChart(data, options) {
                 rectWidth, zeroChart.y - maxY.y - 2);
         }
         else {
+            // green rectangle
             var row = maxY.y + 10 + next['index']*rowHeight;
             ctx.fillStyle = '#00CC66';
             ctx.fillRect(
                 zeroChart.x + time*rectWidth,
                 row,
                 rectWidth, rectHeight);
+        }
+
+        // TODO: why 'not' here?
+        if (!next['event']) {
+            drawCurrentTime();
         }
 
         if (time >= totalTime) {
@@ -283,15 +311,15 @@ function drawChart(data, options) {
         }
         else {
             drawDeadlines(next['deadlines']);
-                time++;
+            time++;
         }
     }
 
     function drawDeadlines(indexes) {
+        if (indexes.length > 0) {
+            drawCurrentTime();
+        }
         indexes.forEach(function(index) {
-            ctx.strokeStyle = '#006666';
-            ctx.lineCap="round";
-            ctx.lineWidth = 4;
             ctx.moveTo(
                 zeroChart.x + time*rectWidth,
                 maxY.y + 12 + index*rowHeight - rectMargin/2);
@@ -300,6 +328,17 @@ function drawChart(data, options) {
                 maxY.y + (index + 1)*rowHeight + rectMargin/2 - 8);
             ctx.stroke();
         });
+    }
+
+    function drawCurrentTime() {
+        var timeCaption = chart.getContext("2d");
+        timeCaption.fillStyle = '#000000';
+        timeCaption.font = '12px Arial';
+        timeCaption.textBaseline = 'top';
+        timeCaption.fillText(
+            time,
+            zeroChart.x + time*rectWidth - 5,
+            zeroChart.y + 5 );
     }
 }
 
