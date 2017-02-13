@@ -12,6 +12,10 @@ var EXAMPLES = [
         data:[[0, 10, 6], [1, 15, 3]],
     },
     {
+        algorithm:'fps_rate_monotonic',
+        data:[[0, 10, 6], [1, 15, 8]],
+    },
+    {
         algorithm:'edf',
         data:[[0, 40, 20], [1, 60, 22], [2, 80, 8], [3, 120, 4]],
     },
@@ -58,6 +62,11 @@ function getData() {
         };
 
         if ((el.priority || el.priority == "0") && el.period && el.wcet) {
+            if(el.wcet > el.period) {
+                throw 'WCET non può essere maggiore di T';
+            }
+
+            // The analyzed row is valid. Add some more info and push
             el['status'] = {
                 remaining:0,
                 active:false,
@@ -120,10 +129,23 @@ function whoIsNext(data, options, time) {
     }
 
     // apply the algorithms
-    function fpsRateMonotonic() {
+    function fps() {
         winner = null;
         whoIsReady.forEach(function(thread) {
             if (winner === null || thread.priority < winner.priority) {
+                winner = thread;
+            }
+        });
+        return winner
+    }
+
+    function rms() {
+        winner = null;
+        whoIsReady.forEach(function(thread) {
+            if (
+                    winner === null ||
+                    thread.period < winner.period ||
+                    (thread.period == winner.period && thread.priority < winner.priority) ){
                 winner = thread;
             }
         });
@@ -145,7 +167,6 @@ function whoIsNext(data, options, time) {
                 var tlife = thread['status']['deadlineDistance'];
                 var wlife = winner['status']['deadlineDistance'];
                 if (
-                        winner === null ||
                         tlife < wlife ||
                         ( tlife == wlife && thread.priority < winner.priority)) {
                     winner = thread;
@@ -158,8 +179,11 @@ function whoIsNext(data, options, time) {
     if (activeThread && !options['preemption']) {
         winner = activeThread;
     }
+    else if (options['algorithm'] == 'fps') {
+        winner = fps();
+    }
     else if (options['algorithm'] == 'fps_rate_monotonic') {
-        winner = fpsRateMonotonic();
+        winner = rms();
     }
     else if (options['algorithm'] == 'edf') {
         winner = edf();
@@ -217,37 +241,6 @@ function drawChart(data, options) {
     var animation = setInterval(frame, msInterval);
     function frame() {
         next = whoIsNext(data, options, time);
-
-        if (time >= totalTime) {
-            var indexes = new Array();
-            data.forEach(function(row) {
-                indexes.push(row['status']['index']);
-            });
-            drawDeadlines(indexes);
-
-            clearInterval(animation);
-            $('#result p').text('OK!');
-        }
-        else {
-            if (next['idle']) {
-                ctx.fillStyle = '#CCE5FF';
-                ctx.fillRect(
-                    zeroChart.x + time*rectWidth,
-                    maxY.y,
-                    rectWidth, zeroChart.y - maxY.y - 2);
-            }
-            else if (next['ok']) {
-                var row = maxY.y + 10 + next['index']*rowHeight;
-                ctx.fillStyle = '#00CC66';
-                ctx.fillRect(
-                    zeroChart.x + time*rectWidth,
-                    row,
-                    rectWidth, rectHeight);
-            }
-            drawDeadlines(next['deadlines']);
-            time++;
-        }
-
         if (!next['ok']) {
             var row = maxY.y + 10 + next['index']*rowHeight;
             ctx.fillStyle = '#FF3333';
@@ -260,6 +253,37 @@ function drawChart(data, options) {
             $('#result p').text(
                 'Deadline non rispettata per il thread _' +
                 next['thread']['name'] + '_.');
+        }
+        else if (time >= totalTime) {
+            clearInterval(animation);
+            $('#result p').text('OK!');
+        }
+        else if (next['idle']) {
+            ctx.fillStyle = '#CCE5FF';
+            ctx.fillRect(
+                zeroChart.x + time*rectWidth,
+                maxY.y,
+                rectWidth, zeroChart.y - maxY.y - 2);
+        }
+        else {
+            var row = maxY.y + 10 + next['index']*rowHeight;
+            ctx.fillStyle = '#00CC66';
+            ctx.fillRect(
+                zeroChart.x + time*rectWidth,
+                row,
+                rectWidth, rectHeight);
+        }
+
+        if (time >= totalTime) {
+            var indexes = new Array();
+            data.forEach(function(row) {
+                indexes.push(row['status']['index']);
+            });
+            drawDeadlines(indexes);
+        }
+        else {
+            drawDeadlines(next['deadlines']);
+                time++;
         }
     }
 
@@ -281,7 +305,13 @@ function drawChart(data, options) {
 
 
 function main() {
-    formData = getData();
+    try {
+        formData = getData();
+    }
+    catch(message) {
+        $('#result').html('<p class="error">' + message + '</p>');
+        return;
+    }
 
     if (formData['data'].length == 0) {
         $('#result').html('<p class="error">Nessun dato inserito</p>');
