@@ -84,6 +84,8 @@ function getData() {
 function whoIsNext(data, options, time) {
     // check deadlines and if a thread if active
     var deadlines = new Array();
+    var event = false;
+
     try {
         var whoIsReady = new Array();
         var activeThread = null;
@@ -93,6 +95,7 @@ function whoIsNext(data, options, time) {
             if (deadline) {
                 if (thread['status']['remaining'] > 0) {
                     deadlines = [thread['status']['index']];
+                    event = true;
                     throw thread;
                 }
                 else {
@@ -116,12 +119,13 @@ function whoIsNext(data, options, time) {
             thread:failingThread,
             // `deadlines` is inizialized in any case
             deadlines:deadlines,
+            event:event,
         };
     }
 
     // idle case
     if (whoIsReady.length == 0) {
-        return { ok:true, idle:true, deadlines:deadlines };;
+        return { ok:true, idle:true, deadlines:deadlines, event:event };
     }
 
     // apply the algorithms
@@ -189,9 +193,21 @@ function whoIsNext(data, options, time) {
     }
 
     winner['status']['remaining']--;
+    if (winner['status']['active']) {
+        // a new thread is executing, now
+        event = true;
+    }
     winner['status']['active'] = winner['status']['remaining'] > 0;
+    if (!winner['status']['active']) {
+        event = true;
+    }
 
-    return { ok:true, index:winner['status']['index'], deadlines:deadlines };
+    return {
+        ok:true,
+        index:winner['status']['index'],
+        deadlines:deadlines,
+        event:event
+    };
 }
 
 
@@ -272,6 +288,9 @@ function drawChart(data, options) {
                 rectWidth, rectHeight);
         }
 
+        if (!next['event']) {
+            drawCurrentTime();
+        }
         if (time >= totalTime) {
             var indexes = new Array();
             data.forEach(function(row) {
@@ -286,6 +305,9 @@ function drawChart(data, options) {
     }
 
     function drawDeadlines(indexes) {
+        if (indexes.length > 0) {
+            drawCurrentTime();
+        }
         indexes.forEach(function(index) {
             ctx.moveTo(
                 zeroChart.x + time*rectWidth,
@@ -295,6 +317,17 @@ function drawChart(data, options) {
                 maxY.y + (index + 1)*rowHeight + rectMargin/2 - 8);
             ctx.stroke();
         });
+    }
+
+    function drawCurrentTime() {
+        var timeCaption = chart.getContext("2d");
+        timeCaption.fillStyle = '#000000';
+        timeCaption.font = '12px Arial';
+        timeCaption.textBaseline = 'top';
+        timeCaption.fillText(
+            time,
+            zeroChart.x + time*rectWidth - 5,
+            zeroChart.y + 5 );
     }
 }
 
