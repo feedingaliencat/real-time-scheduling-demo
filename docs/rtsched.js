@@ -271,13 +271,14 @@ function drawChart(data, options) {
                 rectWidth, rectHeight);
 
             clearInterval(animation);
-            $('#resultMessage').text(
+            printMessage(
                 'Deadline non rispettata per il thread _' +
-                next['thread']['name'] + '_.');
+                next['thread']['name'] + '_.'
+            );
         }
         else if (time >= totalTime) {
             clearInterval(animation);
-            $('#resultMessage').text('OK!');
+            printMessage('OK!');
         }
         else if (next['idle']) {
             // big grey rectangle
@@ -344,19 +345,20 @@ function drawChart(data, options) {
 
 
 function main() {
+    $('#resultContainer').hide();
     try {
         formData = getData();
     }
     catch(message) {
-        $('#resultMessage').html(message);
+        printMessage(message);
         return;
     }
 
     if (formData['data'].length == 0) {
-        $('#resultMessage').html('Nessun dato inserito');
+        printMessage('Nessun dato inserito');
     }
     else if (!formData['options']['algorithm']) {
-        $('#resultMessage').html('Selezionare un algoritmo');
+        printMessage('Selezionare un algoritmo');
     }
     else {
         $('#result').html(
@@ -366,7 +368,6 @@ function main() {
         );
         drawChart(formData['data'], formData['options']);
     }
-    $('#resultContainer').show();
     console.log('done');
 }
 
@@ -397,4 +398,10 @@ function controls() {
     speed = $('#opt-speed').val();
     msInterval = 500 - speed;
     console.log('msInterval: ', msInterval);
+}
+
+
+function printMessage(message) {
+    $('#resultMessage').text(message);
+    $('#resultContainer').show();
 }
