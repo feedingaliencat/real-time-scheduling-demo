@@ -207,6 +207,9 @@ function drawChart(data, options) {
     var yAxisHeight = zeroChart.y - maxY.y - 10;
 
     /* cartesian plane */
+    ctx.strokeStyle = '#006666';
+    ctx.lineCap="round";
+    ctx.lineWidth = 4;
     ctx.moveTo(maxY.x, maxY.y);
     ctx.lineTo(zeroChart.x, zeroChart.y);
     ctx.lineTo(maxX.x, maxX.y);
@@ -284,9 +287,6 @@ function drawChart(data, options) {
 
     function drawDeadlines(indexes) {
         indexes.forEach(function(index) {
-            ctx.strokeStyle = '#006666';
-            ctx.lineCap="round";
-            ctx.lineWidth = 4;
             ctx.moveTo(
                 zeroChart.x + time*rectWidth,
                 maxY.y + 12 + index*rowHeight - rectMargin/2);
