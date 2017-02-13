@@ -47,8 +47,9 @@ html
           ul
           -
             var algorithms = {
-              'fps_rate_monotonic': 'FPS: rate monotonic',
-              'edf': 'EDF',
+              'fps': 'Fixed Priority Scheduling: priorità definita in tabella',
+              'fps_rate_monotonic': 'Fixed Priority Scheduling: rate monotonic',
+              'edf': 'Earliest Deadline First',
             }
           each al_label, algo in algorithms
             -var al_id = 'radio-' + algo

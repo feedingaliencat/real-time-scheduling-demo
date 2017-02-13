@@ -119,10 +119,23 @@ function whoIsNext(data, options, time) {
     }
 
     // apply the algorithms
-    function fpsRateMonotonic() {
+    function fps() {
         winner = null;
         whoIsReady.forEach(function(thread) {
             if (winner === null || thread.priority < winner.priority) {
+                winner = thread;
+            }
+        });
+        return winner
+    }
+
+    function rms() {
+        winner = null;
+        whoIsReady.forEach(function(thread) {
+            if (
+                    winner === null ||
+                    thread.period < winner.period ||
+                    (thread.period == winner.period && thread.priority < winner.priority) ){
                 winner = thread;
             }
         });
@@ -144,7 +157,6 @@ function whoIsNext(data, options, time) {
                 var tlife = thread['status']['deadlineDistance'];
                 var wlife = winner['status']['deadlineDistance'];
                 if (
-                        winner === null ||
                         tlife < wlife ||
                         ( tlife == wlife && thread.priority < winner.priority)) {
                     winner = thread;
@@ -157,8 +169,11 @@ function whoIsNext(data, options, time) {
     if (activeThread && !options['preemption']) {
         winner = activeThread;
     }
+    else if (options['algorithm'] == 'fps') {
+        winner = fps();
+    }
     else if (options['algorithm'] == 'fps_rate_monotonic') {
-        winner = fpsRateMonotonic();
+        winner = rms();
     }
     else if (options['algorithm'] == 'edf') {
         winner = edf();
