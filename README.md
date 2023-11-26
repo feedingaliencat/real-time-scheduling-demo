@@ -17,3 +17,5 @@ cd src
 pug .
 chromium index.html
 ```
+#### Bug Fixed
+This fork fixes the problem of the time overlap in the ouput canvas, giving the user the ability to adjust the size of the canvas.
