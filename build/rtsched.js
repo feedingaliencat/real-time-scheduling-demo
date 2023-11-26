@@ -1,8 +1,6 @@
-console.log('js imported');
-
 var msInterval = null;
 
-var canvasWidth = 1000;
+var canvasWidth = 1000; //default value
 var canvasHeight = 500;
 var maxRows = 4;
 
@@ -49,8 +47,6 @@ function leastCommonMultiple(numbers) {
 
 
 function getData() {
-    console.log('form!');
-
     var data = new Array();
 
     $('#input_data .data_field').each(function() {
@@ -75,8 +71,6 @@ function getData() {
             data.push(el);
         }
     });
-    console.log('data: ', data);
-
     var options = new Object();
     options['algorithm'] = $('input[name="algorithm"]:checked').val();
     options['preemption'] = $('#opt-preemption').is(':checked');
@@ -97,7 +91,6 @@ function whoIsNext(data, options, time) {
         data.forEach(function(thread) {
             var deadline = !(time % thread.period);
             if (deadline) {
-                console.log('deadline for ', thread.name);
                 if (thread['status']['remaining'] > 0) {
                     deadlines = [thread['status']['index']];
                     event = true;
@@ -194,7 +187,6 @@ function whoIsNext(data, options, time) {
         winner = edf();
     }
     else {
-        debugger;
         throw 'Unexpected algorithm';
     }
 
@@ -218,6 +210,7 @@ function whoIsNext(data, options, time) {
 
 
 function drawChart(data, options) {
+    updateCanvasWidth();  // update the value of canvasWidth before using it!!
     var chart = $('#chart')[0];
     var ctx = chart.getContext("2d");
 
@@ -298,7 +291,6 @@ function drawChart(data, options) {
                 rectWidth, rectHeight);
         }
 
-        // TODO: why 'not' here?
         if (!next['event']) {
             drawCurrentTime();
         }
@@ -368,7 +360,6 @@ function main() {
         );
         drawChart(formData['data'], formData['options']);
     }
-    console.log('done');
 }
 
 
@@ -398,6 +389,15 @@ function controls() {
     speed = $('#opt-speed').val();
     msInterval = 500 - speed;
     console.log('msInterval: ', msInterval);
+}
+
+function updateCanvasWidth() {
+    canvasWidth = $('#chart-width').val() || 1000;  // Use adjusted width if available, otherwise use the default value
+}
+
+function adjustChartWidth() {
+    updateCanvasWidth();  // Call this function to update canvasWidth before adjusting the chart width
+    main();  // Re-draw the chart when the width is adjusted
 }
 
 
