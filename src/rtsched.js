@@ -1,6 +1,6 @@
 var msInterval = null;
 
-var canvasWidth = 1000;
+var canvasWidth = 1000; //default value
 var canvasHeight = 500;
 var maxRows = 4;
 
@@ -210,6 +210,7 @@ function whoIsNext(data, options, time) {
 
 
 function drawChart(data, options) {
+    updateCanvasWidth();  // update the value of canvasWidth before using it!!
     var chart = $('#chart')[0];
     var ctx = chart.getContext("2d");
 
@@ -388,6 +389,15 @@ function controls() {
     speed = $('#opt-speed').val();
     msInterval = 500 - speed;
     console.log('msInterval: ', msInterval);
+}
+
+function updateCanvasWidth() {
+    canvasWidth = $('#chart-width').val() || 1000;  // Use adjusted width if available, otherwise use the default value
+}
+
+function adjustChartWidth() {
+    updateCanvasWidth();  // Call this function to update canvasWidth before adjusting the chart width
+    main();  // Re-draw the chart when the width is adjusted
 }
 
 
